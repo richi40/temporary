@@ -1,0 +1,27 @@
+data {
+  int<lower=1> N_obs;
+  int<lower=N_obs> N_state;
+  vector<lower=1, upper=N_state>[N_obs] I_state;
+  vector[N_obs] OBS;
+}
+
+parameters {
+  vector[N_state] trend;
+  vector[N_state] season;
+  real<lower=0, upper=100> s_trend;
+  real<lower=0, upper=100> s_season;
+  real<lower=0, upper=100> s_obs;
+}
+
+transformed parameters {
+  vector[N_state-11] sum_part_season;
+  for(t in 12:N_state)
+    sum_part_season[t-11] = sum(season[(t-11):t]);
+}
+
+model {
+  trend[2:N_state] ~ normal(trend[1:(N_state-1)], s_trend);
+  sum_part_season ~ normal(0, s_season);
+  OBS ~ normal(trend + season, s_obs);
+}
+
